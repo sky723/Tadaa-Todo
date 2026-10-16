@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tadaa — celebrate every finished task</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Crect width='20' height='20' rx='5' fill='%23111'/%3E%3Ctext x='10' y='15' font-size='13' text-anchor='middle' fill='%23FFD23F'%3E✓%3C/text%3E%3C/svg%3E">
+<style>
+:root{--bg:#FFFBF0;--ink:#111;--mut:#777;--yellow:#FFD23F;--card:#fff;--line:#eee3c8;--coffee:#E8D9C0}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.45 -apple-system,system-ui,Segoe UI,sans-serif;background:var(--bg);color:var(--ink)}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+input{font:inherit}
+#snd{position:fixed;top:14px;right:14px;z-index:20;background:var(--ink);color:#fff;border-radius:20px;padding:6px 14px;font-size:13px}
+.screen{display:none;min-height:100vh}.screen.on{display:block}
+/* landing */
+.hero{max-width:720px;margin:0 auto;padding:90px 24px 40px;text-align:center;position:relative}
+.icon{width:96px;height:96px;border-radius:24px;background:var(--ink);color:var(--yellow);display:grid;place-items:center;font-size:54px;margin:0 auto 20px;box-shadow:0 10px 30px #0003}
+h1{font-size:56px;line-height:1.05;margin:0 0 14px;letter-spacing:-1.5px}
+h1 em{font-style:normal;background:var(--yellow);padding:0 .15em;border-radius:8px}
+.lead{font-size:20px;color:#444;margin:0 auto 28px;max-width:520px}
+.cta{background:var(--ink);color:#fff;font-size:20px;font-weight:700;padding:16px 34px;border-radius:40px;box-shadow:0 8px 0 #0004;transition:transform .1s,box-shadow .1s}
+.cta:active{transform:translateY(6px);box-shadow:0 2px 0 #0004}
+.stamp{position:absolute;right:10px;top:70px;background:var(--yellow);padding:10px 16px;border-radius:6px;transform:rotate(8deg);font-size:12px;font-weight:800;text-transform:uppercase;box-shadow:0 4px 0 #0002}
+.stamp b{display:block;font-size:26px;letter-spacing:-1px}
+.eq{max-width:720px;margin:30px auto;background:var(--coffee);border-radius:24px;padding:30px;text-align:center}
+.eq .row{display:flex;justify-content:center;align-items:center;gap:20px;font-size:56px}
+.eq .row .i{width:84px;height:84px;border-radius:22px;display:grid;place-items:center}
+.cup{background:var(--yellow)}.td{background:var(--ink);color:var(--yellow)}
+.vs{display:flex;gap:12px;margin-top:18px}.vs div{flex:1;background:#fff8;border-radius:14px;padding:12px}
+.vs b{display:block;font-size:22px}
+.money{margin-top:16px;font-weight:800;font-size:20px}
+/* auth */
+.auth{max-width:380px;margin:0 auto;padding:110px 24px;text-align:center}
+.auth input{width:100%;padding:14px;border:2px solid var(--line);border-radius:14px;margin:6px 0;background:#fff}
+.auth .cta{width:100%;margin-top:12px;font-size:17px}
+/* app */
+.app{max-width:560px;margin:0 auto;padding:60px 20px 120px}
+.top{display:flex;justify-content:space-between;align-items:baseline}
+.top h2{font-size:34px;margin:0;letter-spacing:-1px}
+.meta{color:var(--mut);transition:.3s}.meta.gold{color:#c99700;font-weight:800}
+.bar{height:8px;background:var(--line);border-radius:8px;margin:14px 0 22px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--yellow);width:0;transition:width .4s}
+.add{display:flex;gap:8px;margin-bottom:18px}
+.add input{flex:1;padding:14px 16px;border:2px solid var(--line);border-radius:14px;background:#fff}
+.add input:focus{outline:0;border-color:var(--ink)}
+.add button{background:var(--ink);color:#fff;border-radius:14px;padding:0 20px;font-weight:700}
+.task{display:flex;align-items:center;gap:14px;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:8px;animation:fly .35s cubic-bezier(.2,1.4,.4,1)}
+@keyframes fly{from{transform:translateY(-18px) scale(.95);opacity:0}}
+.box{width:28px;height:28px;border:2.5px solid var(--ink);border-radius:9px;flex:none;display:grid;place-items:center;font-size:17px;color:transparent;transition:.15s}
+.task.done .box{background:var(--yellow);color:var(--ink);transform:scale(1.1)}
+.task.done .t{text-decoration:line-through;color:#aaa}
+.t{flex:1}.x{color:#ccc;font-size:18px}.x:hover{color:#e33}
+.empty{text-align:center;color:var(--mut);padding:40px 0}
+.out{display:block;margin:30px auto 0;color:var(--mut);font-size:13px;text-decoration:underline}
+#tadaa{position:fixed;inset:0;display:none;place-items:center;pointer-events:none;z-index:30;font-size:84px;font-weight:900;letter-spacing:-3px}
+#tadaa.show{display:grid;animation:tp 1.1s forwards}
+@keyframes tp{0%{transform:scale(.3) rotate(-8deg);opacity:0}25%{transform:scale(1.15) rotate(3deg);opacity:1}80%{opacity:1}100%{transform:scale(1);opacity:0}}
+canvas{position:fixed;inset:0;pointer-events:none;z-index:25}
+@media(max-width:560px){h1{font-size:40px}.stamp{position:static;display:inline-block;margin-bottom:14px}.eq .row{font-size:40px}}
+</style>
+</head>
+<body>
+<button id="snd"></button>
+<canvas id="cv"></canvas><div id="tadaa">Tadaa!</div>
+
+<section class="screen on" id="landing">
+  <div class="hero">
+    <div class="stamp">Price of a coffee<b>$4.50</b>one time</div>
+    <div class="icon">✓</div>
+    <h1>Finish a task.<br><em>Feel the tadaa.</em></h1>
+    <p class="lead">The to-do list that celebrates every checkmark — with a crisp, satisfying tick and a burst of confetti.</p>
+    <button class="cta" id="getBtn">Get Tadaa · $4.50</button>
+    <p style="color:var(--mut);font-size:14px">One coffee. A lifetime of celebrated tasks.</p>
+  </div>
+  <div class="eq">
+    <div class="row"><div class="i cup">☕</div>=<div class="i td">✓</div></div>
+    <div class="vs"><div>Your coffee<b>$5 every day</b></div><div>Tadaa<b>$4.50 once. forever.</b></div></div>
+    <div class="money">Skip one coffee. Celebrate every finished task. Forever.</div>
+  </div>
+</section>
+
+<section class="screen" id="authS">
+  <form class="auth" id="authF">
+    <div class="icon" style="width:72px;height:72px;font-size:40px">✓</div>
+    <h2 style="font-size:28px;margin:0 0 6px">Create your account</h2>
+    <p style="color:var(--mut);margin:0 0 14px">Saved on this device. Cloud sync comes next.</p>
+    <input id="nm" placeholder="Your name" required>
+    <input id="em" type="email" placeholder="Email" required>
+    <button class="cta">Start celebrating</button>
+  </form>
+</section>
+
+<section class="screen" id="appS">
+  <div class="app">
+    <div class="top"><h2 id="hi"></h2><span class="meta" id="meta"></span></div>
+    <div class="bar"><i id="bar"></i></div>
+    <form class="add" id="addF"><input id="in" placeholder="Add a task…" autocomplete="off"><button>Add</button></form>
+    <div id="list"></div>
+    <button class="out" id="out">Sign out</button>
+  </div>
+</section>
+
+<script>
+const $=s=>document.querySelector(s);
+const ls={get:(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+const st={user:ls.get('tadaa_user',null),tasks:ls.get('tadaa_tasks',[]),sound:ls.get('tadaa_sound',true)};
+const save=()=>{ls.set('tadaa_user',st.user);ls.set('tadaa_tasks',st.tasks);ls.set('tadaa_sound',st.sound)};
+
+/* ───────── Sound: all synthesized with Web Audio (~0 KB) ───────── */
+let ac;const ctx=()=>(ac=ac||new (window.AudioContext||window.webkitAudioContext)(),ac.state==='suspended'&&ac.resume(),ac);
+// one oscillator with a frequency sweep and a percussive envelope
+function blip({type='sine',f0,f1=f0,t0=0,dur=.1,vol=.3}){const a=ctx(),o=a.createOscillator(),g=a.createGain(),t=a.currentTime+t0;
+  o.type=type;o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f1,t+dur);
+  g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.008);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+dur+.02)}
+// the satisfying tick: punch + click edge + rising sparkle, ~0.3s
+function tick(scale=1){if(!st.sound)return;
+  blip({f0:1200,f1:800,dur:.12,vol:.35*scale});                       // 1. punch — the body of the click
+  blip({type:'triangle',f0:2400,f1:2000,dur:.05,vol:.18*scale});      // 2. click edge — brightness and crispness
+  blip({f0:1800,f1:3200,t0:.06,dur:.22,vol:.14*scale})}               // 3. sparkle rise — a tiny "tadaa!"
+function softTick(){if(!st.sound)return;blip({f0:1800,f1:1700,dur:.05,vol:.1})}   // add / undo
+function fanfare(){if(!st.sound)return;tick(1);                                  // landing: the full tadaa
+  [523.25,659.25,783.99,1046.5].forEach((f,i)=>blip({type:'triangle',f0:f,f1:f,t0:.12+i*.07,dur:.7,vol:.16}));
+  blip({f0:2093,f1:2093,t0:.4,dur:.6,vol:.07})}
+
+/* ───────── Confetti ───────── */
+const cv=$('#cv'),cx=cv.getContext('2d');let P=[];
+const COL=['#FFD23F','#111','#FF6B6B','#4ECDC4','#7B61FF','#fff'];
+function confetti(x,y,n){cv.width=innerWidth;cv.height=innerHeight;const run=!P.length;
+  for(let i=0;i<n;i++)P.push({x,y,vx:(Math.random()-.5)*(n>60?18:10),vy:-Math.random()*(n>60?16:9)-3,w:Math.random()*8+4,r:Math.random()*6,c:COL[i%COL.length],l:100});
+  if(run)requestAnimationFrame(loop)}
+function loop(){cx.clearRect(0,0,cv.width,cv.height);P=P.filter(p=>p.l>0);
+  for(const p of P){p.vy+=.4;p.x+=p.vx;p.y+=p.vy;p.vx*=.99;p.r+=.2;p.l--;cx.save();cx.globalAlpha=Math.min(1,p.l/30);cx.translate(p.x,p.y);cx.rotate(p.r);cx.fillStyle=p.c;cx.fillRect(-p.w/2,-p.w/4,p.w,p.w/2);cx.restore()}
+  P.length?requestAnimationFrame(loop):cx.clearRect(0,0,cv.width,cv.height)}
+function banner(){const t=$('#tadaa');t.classList.remove('show');void t.offsetWidth;t.classList.add('show')}
+
+/* ───────── UI ───────── */
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id))}
+function sndLabel(){$('#snd').textContent=st.sound?'🔊 Sound on':'🔇 Sound off'}
+$('#snd').onclick=()=>{st.sound=!st.sound;save();sndLabel();if(st.sound)tick(.5)};
+sndLabel();
+
+$('#getBtn').onclick=e=>{fanfare();banner();confetti(innerWidth/2,innerHeight/2,160);
+  setTimeout(()=>show(st.user?'appS':'authS'),st.user?900:700);if(st.user)renderApp()};
+$('#authF').onsubmit=e=>{e.preventDefault();st.user={name:$('#nm').value.trim(),email:$('#em').value.trim()};save();softTick();show('appS');renderApp()};
+$('#out').onclick=()=>{st.user=null;save();show('landing')};
+
+function renderApp(){
+  $('#hi').textContent='Hi '+(st.user?.name||'there')+' 👋';
+  const done=st.tasks.filter(t=>t.done).length,n=st.tasks.length;
+  $('#meta').textContent=n?`${done} of ${n} celebrated`:'Nothing yet';
+  $('#meta').classList.toggle('gold',n>0&&done===n);
+  $('#bar').style.width=n?done/n*100+'%':'0';
+  $('#list').innerHTML=st.tasks.length?st.tasks.map(t=>`<div class="task ${t.done?'done':''}" data-id="${t.id}"><button class="box" data-t="${t.id}" aria-label="toggle">✓</button><span class="t"></span><button class="x" data-x="${t.id}" aria-label="delete">✕</button></div>`).join(''):'<div class="empty">Add your first task and finish it. You\'ll see. 🎉</div>';
+  document.querySelectorAll('#list .task').forEach((el,i)=>{el.querySelector('.t').textContent=st.tasks[i].text});
+}
+$('#addF').onsubmit=e=>{e.preventDefault();const v=$('#in').value.trim();if(!v)return;
+  st.tasks.unshift({id:Date.now(),text:v,done:false});$('#in').value='';save();softTick();renderApp()};
+$('#list').onclick=e=>{
+  const b=e.target.closest('[data-t]'),x=e.target.closest('[data-x]');
+  if(x){st.tasks=st.tasks.filter(t=>t.id!=x.dataset.x);save();return renderApp()}
+  if(!b)return;const t=st.tasks.find(t=>t.id==b.dataset.t);t.done=!t.done;save();
+  if(t.done){tick();const r=b.getBoundingClientRect();confetti(r.left+14,r.top+14,45);
+    if(st.tasks.every(t=>t.done)){setTimeout(()=>{fanfare();banner();confetti(innerWidth/2,innerHeight/2,180)},250)}}
+  else softTick();
+  renderApp()};
+if(st.user)renderApp();
+</script>
+</body>
+</html>
