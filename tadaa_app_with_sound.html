@@ -148,12 +148,13 @@ function blip({type='sine',f0,f1=f0,t0=0,dur=.1,vol=.3}){const a=ctx(),o=a.creat
   o.type=type;o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f1,t+dur);
   g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.008);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
   o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+dur+.02)}
-function tick(scale=1){if(!st.sound)return;
+const haptic=k=>{try{window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify({haptic:k}))}catch{}};
+function tick(scale=1){haptic('tick');if(!st.sound)return;
   blip({f0:1200,f1:800,dur:.12,vol:.35*scale});                       // punch
   blip({type:'triangle',f0:2400,f1:2000,dur:.05,vol:.18*scale});      // click edge
   blip({f0:1800,f1:3200,t0:.06,dur:.22,vol:.14*scale})}               // sparkle rise
-function softTick(){if(!st.sound)return;blip({f0:1800,f1:1700,dur:.05,vol:.1})}
-function fanfare(){if(!st.sound)return;tick(1);
+function softTick(){haptic('soft');if(!st.sound)return;blip({f0:1800,f1:1700,dur:.05,vol:.1})}
+function fanfare(){haptic('success');if(!st.sound)return;tick(1);
   [523.25,659.25,783.99,1046.5].forEach((f,i)=>blip({type:'triangle',f0:f,f1:f,t0:.12+i*.07,dur:.7,vol:.16}));
   blip({f0:2093,f1:2093,t0:.4,dur:.6,vol:.07})}
 function chime(){if(!st.sound)return;blip({f0:988,t0:0,dur:.2,vol:.2});blip({f0:1318,t0:.2,dur:.35,vol:.2})}
